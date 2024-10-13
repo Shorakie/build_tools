@@ -164,15 +164,22 @@ def make():
   # --------------------------------------------------------------------------
   # build
   os.chdir("v8")
+  if base.is_os_arm():
+    base_args64 = "target_cpu=\\\"arm64\\\" v8_target_cpu=\\\"arm64\\\" v8_static_library=true is_component_build=false v8_use_snapshot=false"
+    base_args32 = "target_cpu=\\\"arm\\\" v8_target_cpu=\\\"arm\\\" v8_static_library=true is_component_build=false v8_use_snapshot=false"
+  else:  
+    base_args64 = "target_cpu=\\\"x64\\\" v8_target_cpu=\\\"x64\\\" v8_static_library=true is_component_build=false v8_use_snapshot=false"
+    base_args32 = "target_cpu=\\\"x86\\\" v8_target_cpu=\\\"x86\\\" v8_static_library=true is_component_build=false v8_use_snapshot=false"
 
-  base_args64 = "target_cpu=\\\"x64\\\" v8_target_cpu=\\\"x64\\\" v8_static_library=true is_component_build=false v8_use_snapshot=false"
-  base_args32 = "target_cpu=\\\"x86\\\" v8_target_cpu=\\\"x86\\\" v8_static_library=true is_component_build=false v8_use_snapshot=false"
+  if config.check_option("platform", "linux_arm64"): # this is a failsafe:
+    base.cmd2("gn", ["gen", "out.gn/linux_64", "--args=\"is_debug=false " + base_args64 + " is_clang=" + is_use_clang() + " use_sysroot=false treat_warnings_as_errors=false\""])
+    base.cmd("ninja", ["-C", "out.gn/linux_64"])
 
   if config.check_option("platform", "linux_64"):
     base.cmd2("gn", ["gen", "out.gn/linux_64", "--args=\"is_debug=false " + base_args64 + " is_clang=" + is_use_clang() + " use_sysroot=false treat_warnings_as_errors=false\""])
     base.cmd("ninja", ["-C", "out.gn/linux_64"])
 
-  if config.check_option("platform", "linux_32"):
+  elif config.check_option("platform", "linux_32"):
     base.cmd2("gn", ["gen", "out.gn/linux_32", "--args=\"is_debug=false " + base_args32 + " is_clang=" + is_use_clang() + " use_sysroot=false treat_warnings_as_errors=false\""])
     base.cmd("ninja", ["-C", "out.gn/linux_32"])
 
@@ -188,8 +195,7 @@ def make():
 
     base.cmd2("gn", ["gen", "out.gn/win_64/release", "--args=\"is_debug=false " + base_args64 + " is_clang=false\""])
     base.cmd("ninja", ["-C", "out.gn/win_64/release"])
-
-  if config.check_option("platform", "win_32"):
+  elif config.check_option("platform", "win_32"):
     if (-1 != config.option("config").lower().find("debug")):
       base.cmd2("gn", ["gen", "out.gn/win_32/debug", "--args=\"is_debug=true " + base_args32 + " is_clang=false\""])
       base.cmd("ninja", ["-C", "out.gn/win_32/debug"])    
