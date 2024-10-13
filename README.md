@@ -40,7 +40,7 @@ sudo apt-get install -y python
 3. Run the `automate.py` script:
 
     ```bash
-    ./automate.py
+    ./automate.py --platform="linux_arm64"
     ```
 
 If you run the script without any parameters this allows to build **ONLYOFFICE
