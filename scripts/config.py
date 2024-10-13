@@ -53,15 +53,15 @@ def parse():
     else:
       options["platform"] += (" mac_" + bits)
 
-  if ("mac" == host_platform) and check_option("platform", "mac_arm64") and not base.is_os_arm():
+  if ("mac" == host_platform) and check_option("platform", "mac_arm64") and base.is_os_arm():
     if not check_option("platform", "mac_64"):
       options["platform"] = "mac_64 " + options["platform"]
 
-  if ("linux" == host_platform) and check_option("platform", "linux_arm64") and not base.is_os_arm():
+  if ("linux" == host_platform) and check_option("platform", "linux_arm64") and base.is_os_arm():
     if not check_option("platform", "linux_64"):
       # linux_64 binaries need only for desktop
       if check_option("module", "desktop"):
-        options["platform"] = "linux_64 " + options["platform"]
+        options["platform"] = options["platform"]
 
   if check_option("platform", "xp") and ("windows" == host_platform):
     options["platform"] += " win_64_xp win_32_xp"
@@ -142,7 +142,7 @@ def check_compiler(platform):
   elif (0 == platform.find("linux")):
     compiler["compiler"] = "gcc"
     compiler["compiler_64"] = "gcc_64"
-    if (0 == platform.find("linux_arm")) and not base.is_os_arm():
+    if (0 == platform.find("linux_arm")) and base.is_os_arm():
       compiler["compiler"] = "gcc_arm"
       compiler["compiler_64"] = "gcc_arm64"
   elif (0 == platform.find("mac")):
