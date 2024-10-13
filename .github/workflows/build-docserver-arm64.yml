@@ -1,0 +1,34 @@
+name: OnlyOffice Document Server Build
+
+on:
+  push:
+    branches: [ "release/v8.2.0" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    # schedule build every night
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: buildjet-4vcpu-ubuntu-1804-arm
+    steps:
+    - uses: actions/checkout@v3
+    - name: configure and compile
+      run:  |
+            cd ${{ github.workspace }}/tools/linux
+            ls .
+            sudo apt update
+            sudo apt full-upgrade
+            sudo apt-get install -y build-essential module-assistant python3 sudo software-properties-common python3-launchpadlib qtbase5-dev qtbase5-dev-tools
+            sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+            # python3 ./use_system_qt.py
+            python3 ./automate.py server --platform="linux_arm64"
+            ls -l .
+            tar -cvzf onlyoffice-linux-arm64-bin.tar.gz ../../out/linux_64/onlyoffice
+    - name: Upload arm64
+      uses: actions/upload-artifact@v4
+      with:
+          name: onlyoffice-linux-arm64-bin
+          path: ./tools/linux/onlyoffice-linux-arm64-bin.tar.gz
