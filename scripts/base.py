@@ -518,19 +518,43 @@ def git_is_ssh():
     return True
   return False
 
-def get_ssh_base_url():
+def get_ssh_base_url(owner):
   cur_origin = git_get_origin()
-  ind = cur_origin.find(":ONLYOFFICE/")
+  ind = cur_origin.find(":"+owner+"/")
   if (ind == -1):
-    return "git@github.com:ONLYOFFICE/"
-  return cur_origin[:ind+12]
+    return "git@github.com:"+owner+"/"
+  return cur_origin[:ind+len(owner)+2]
 
 def git_update(repo, is_no_errors=False, is_current_dir=False, git_owner=""):
   print("[git] update: " + repo)
   owner = git_owner if git_owner else "ONLYOFFICE"
+  branch_to_checkout = config.option("branch")
+
+  modified_repos = {
+    "server": {
+      "owner": "ONLYOFFICE",
+      "patches": [
+        ["git", ['remote', 'add', 'btatic-origin', 'https://github.com/btactic-oo/server.git']],
+        ["git", ['fetch', '--all', '--tags']],
+        ["git", ['cherry-pick', 'cb6100664657bc91a8bae82d005f00dcc0092a9c']],
+      ],
+    },
+    "web-apps": {
+      "owner": "ONLYOFFICE",
+      "patches": [
+        ["git", ['remote', 'add', 'btatic-origin', 'https://github.com/btactic-oo/web-apps.git']],
+        ["git", ['fetch', '--all', '--tags']],
+        ["git", ['cherry-pick', '2d186b887bd1f445ec038bd9586ba7da3471ba05']],
+      ],
+    },
+  }
+  if repo in modified_repos:
+    owner = modified_repos[repo]["owner"]
+
   url = "https://github.com/" + owner + "/" + repo + ".git"
   if git_is_ssh():
-    url = get_ssh_base_url() + repo + ".git"
+    print(f"\n\nUsing SSH GIT for {get_ssh_base_url()}/{repo}")
+    url = get_ssh_base_url(owner) + repo + ".git"
   folder = get_script_dir() + "/../../" + repo
   if is_current_dir:
     folder = repo
@@ -544,7 +568,7 @@ def git_update(repo, is_no_errors=False, is_current_dir=False, git_owner=""):
   os.chdir(folder)
   cmd("git", ["fetch"], False if ("1" != config.option("update-light")) else True)
   if is_not_exit or ("1" != config.option("update-light")):
-    retCheckout = cmd("git", ["checkout", "-f", config.option("branch")], True)
+    retCheckout = cmd("git", ["checkout", "-f", branch_to_checkout], True)
     if (retCheckout != 0):
       print("branch does not exist...")
       print("switching to master...")
@@ -553,6 +577,10 @@ def git_update(repo, is_no_errors=False, is_current_dir=False, git_owner=""):
   if (0 != config.option("branch").find("tags/")):
     cmd("git", ["pull"], False if ("1" != config.option("update-light")) else True)
     cmd("git", ["submodule", "update", "--recursive", "--remote"], True)
+  if repo in modified_repos:
+    patches = modified_repos[repo].get("patches", [])
+    for patch in patches:
+      cmd(*patch)
   os.chdir(old_cur)
   return
 
