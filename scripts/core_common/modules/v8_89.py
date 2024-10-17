@@ -371,15 +371,16 @@ def make():
       shutil.rmtree("customnin")
 
     # Install GN
-    base.cmd("git", ["clone", "https://gn.googlesource.com/gn", "customgn"], False)
-    os.chdir("customgn")
-    base.cmd("git", ["checkout", "23d22bcaa71666e872a31fd3ec363727f305417e"], False)
-    base.cmd("sed", ["-i", "-e", "\"s/-Wl,--icf=all//\"", "build/gen.py"], False)
-    base.cmd("python", ["build/gen.py"], False)
-    base.cmd("ninja", ["-C", "out"])
-    os.chdir("../")
-    base.cmd("cp", ["./customgn/out/gn", "./buildtools/linux64/gn"])
-    shutil.rmtree("customgn")
+    if not base.is_file("./buildtools/linux64/gn"):
+      base.cmd("git", ["clone", "https://gn.googlesource.com/gn", "customgn"], False)
+      os.chdir("customgn")
+      base.cmd("git", ["checkout", "23d22bcaa71666e872a31fd3ec363727f305417e"], False)
+      base.cmd("sed", ["-i", "-e", "\"s/-Wl,--icf=all//\"", "build/gen.py"], False)
+      base.cmd("python", ["build/gen.py"], False)
+      base.cmd("ninja", ["-C", "out"])
+      os.chdir("../")
+      base.cmd("cp", ["./customgn/out/gn", "./buildtools/linux64/gn"])
+      shutil.rmtree("customgn")
     
     # Compile V8
     base.cmd2("gn", ["gen", "out.gn/linux_arm64", make_args(gn_args, "linux_arm64", False)])
