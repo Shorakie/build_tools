@@ -1,0 +1,4 @@
+4c4
+< EditorUIController.isSupportEditFeature = () => false;
+---
+> EditorUIController.isSupportEditFeature = () => true;

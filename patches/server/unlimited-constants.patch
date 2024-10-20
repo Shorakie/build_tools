@@ -1,0 +1,6 @@
+90,91c90,91
+< exports.LICENSE_CONNECTIONS = 20;
+< exports.LICENSE_USERS = 3;
+---
+> exports.LICENSE_CONNECTIONS = 99999;
+> exports.LICENSE_USERS = 99999;

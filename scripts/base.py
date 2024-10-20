@@ -534,17 +534,15 @@ def git_update(repo, is_no_errors=False, is_current_dir=False, git_owner=""):
     "server": {
       "owner": "ONLYOFFICE",
       "patches": [
-        ["git", ['remote', 'add', 'btatic-origin', 'https://github.com/btactic-oo/server.git']],
-        ["git", ['fetch', '--all', '--tags']],
-        ["git", ['cherry-pick', 'cb6100664657bc91a8bae82d005f00dcc0092a9c']],
+        ['./Common/sources/constants.js', get_script_dir()+'/../patches/server/unlimited-constants.patch'],
       ],
     },
     "web-apps": {
       "owner": "ONLYOFFICE",
       "patches": [
-        ["git", ['remote', 'add', 'btatic-origin', 'https://github.com/btactic-oo/web-apps.git']],
-        ["git", ['fetch', '--all', '--tags']],
-        ["git", ['cherry-pick', '2d186b887bd1f445ec038bd9586ba7da3471ba05']],
+        ['./apps/documenteditor/mobile/src/lib/patch.jsx', get_script_dir()+'/../patches/web-apps/documenteditor.patch'],
+        ['./apps/presentationeditor/mobile/src/lib/patch.jsx', get_script_dir()+'/../patches/web-apps/presentationeditor.patch'],
+        ['./apps/spreadsheeteditor/mobile/src/lib/patch.jsx', get_script_dir()+'/../patches/web-apps/spreadsheeteditor.patch'],
       ],
     },
   }
@@ -580,7 +578,8 @@ def git_update(repo, is_no_errors=False, is_current_dir=False, git_owner=""):
   if repo in modified_repos:
     patches = modified_repos[repo].get("patches", [])
     for patch in patches:
-      cmd(*patch)
+      cmd('dos2unix', ['-q', *patch])
+      cmd('patch', ['-lsN', *patch], True)
   os.chdir(old_cur)
   return
 
